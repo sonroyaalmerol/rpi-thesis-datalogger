@@ -4,7 +4,10 @@ var ADS = new ads1x15(1)
 
 const getVraw = () => {
   return new Promise((resolve, reject) => {
-    ADS.readADCSingleEnded(0, '4096', '250', function(err, data) {   
+    var channel = 0 //channel 0, 1, 2, or 3...  
+    var samplesPerSecond = '860' // see index.js for allowed values for your chip  
+    var progGainAmp = '4096' // see index.js for allowed values for your chip  
+    ADS.readADCSingleEnded(channel, progGainAmp, samplesPerSecond, (err, data) => {   
       if (err) {  
         //logging / troubleshooting code goes here...  
         reject(err)
@@ -19,7 +22,10 @@ const getVraw = () => {
 
 const getIraw = () => {
   return new Promise((resolve, reject) => {
-    ADS.readADCSingleEnded(1, '6144', '250', function(err, data) {   
+    var channel = 1 //channel 0, 1, 2, or 3...  
+    var samplesPerSecond = '860' // see index.js for allowed values for your chip  
+    var progGainAmp = '6144' // see index.js for allowed values for your chip  
+    ADS.readADCSingleEnded(channel, progGainAmp, samplesPerSecond, (err, data) => {   
       if (err) {  
         //logging / troubleshooting code goes here...  
         reject(err)
@@ -40,7 +46,7 @@ const port = 3000
 const uniqid = require('uniqid')
 const moment = require('moment')
 
-const db = new PouchDB('thesis-data-demo')
+const db = new PouchDB('thesis-data-demo3')
 var remoteDB = 'http://admin:admin123@thesis.mikumaprojects.com/thesis-data-demo'
 const Poller = require('./poller')
 
@@ -53,9 +59,13 @@ poller.onPoll(async () => {
   var Vraw, Iraw, Vout, Iout, humidity, temperature
   try {  
     Vraw = await getVraw()
+    console.log(`Vraw: ${Vraw}`)
     Iraw = await getIraw()
-    Vout = Vraw * 0.632034632 / 1000
-    Iout = (Iraw - 13775) * 0.000105949 / 0.1
+    console.log(`Iraw: ${Iraw}`)
+    Vout = Vraw * 5.030265596 / 1000
+    Iout = (Iraw - 2590) * 0.002322580645 / 0.1
+    console.log(`Vout: ${Vout}`)
+    console.log(`Iout: ${Iout}`)
   } catch (err) {
     console.log(err)
     Vout = 0
@@ -64,7 +74,7 @@ poller.onPoll(async () => {
   var { temperature, humidity } = await DHT.read(22, 4)
 
   db.put({
-    _id: uniqid(),
+    _id: new Date().toJSON(),
     timestamp: new Date(),
     temperature: temperature.toFixed(1),
     humidity: humidity.toFixed(1),
@@ -90,7 +100,7 @@ poller.onPoll(async () => {
 poller.poll()
 
 app.get('/', (req, res) => {
-  db.allDocs({ include_docs: true }).then((result) => {
+  db.allDocs({ include_docs: true, descending: true }).then((result) => {
     res.render('table', { data: result.rows.map((item) => {
       var toReturn = item.doc
       toReturn.rawTimestamp = toReturn.timestamp
