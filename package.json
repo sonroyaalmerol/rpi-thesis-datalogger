@@ -13,9 +13,12 @@
     "ejs": "^2.6.2",
     "express": "^4.17.1",
     "moment": "^2.24.0",
+    "node-ads1x15": "^1.0.3",
     "node-dht-sensor": "^0.3.0",
     "node-gyp-build": "^4.1.0",
     "pouchdb": "^7.1.1",
+    "raspi": "^6.0.1",
+    "raspi-i2c": "^6.2.2",
     "uniqid": "^5.0.3"
   }
 }
