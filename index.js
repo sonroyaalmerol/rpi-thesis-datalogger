@@ -40,7 +40,7 @@ const getIraw = () => {
     })
   })
 }
-
+//*/
 const express = require('express')
 const app = express()
 app.set('view engine', 'ejs')
@@ -73,7 +73,7 @@ poller.onPoll(() => {
 
       db.put({
         _id: uniqid(),
-        timestamp: moment().format("MMM DD YYYY, h:mm:ss a"),
+        timestamp: new Date(),
         temperature,
         humidity,
         voltage: Vout,
@@ -105,7 +105,10 @@ poller.poll()
 app.get('/', (req, res) => {
   db.allDocs({ include_docs: true }).then((result) => {
     res.render('table', { data: result.rows.map((item) => {
-      return item.doc
+      var toReturn = item.doc
+      toReturn.rawTimestamp = toReturn.timestamp
+      toReturn.timestamp = moment(toReturn.timestamp).format("MMM DD YYYY, h:mm:ss a")
+      return toReturn
     })})
   }, (error) => {
     res.status(400).send(error)

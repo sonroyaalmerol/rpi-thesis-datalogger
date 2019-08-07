@@ -8,6 +8,7 @@
         <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
         <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
         <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
         <div class="container">
             <hr>
@@ -75,7 +76,7 @@
             }
             var rawData = <%- JSON.stringify(data) %>;
             var labels = rawData.map(function(e) {
-                return e.timestamp;
+                return new Date(e.rawTimestamp);
             })
             var temperature = rawData.map(function(e) {
                 return e.temperature;
@@ -101,6 +102,13 @@
                         data: temperature,
                         backgroundColor: chartColors.blue
                     }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time'
+                        }]
+                    }
                 }
             });
             var ctx2 = document.getElementById('dataChart2').getContext('2d');
@@ -114,6 +122,13 @@
                         data: humidity,
                         backgroundColor: chartColors.green
                     }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time'
+                        }]
+                    }
                 }
             });
             var ctx3 = document.getElementById('dataChart3').getContext('2d');
@@ -127,6 +142,13 @@
                         data: voltage,
                         backgroundColor: chartColors.yellow
                     }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time'
+                        }]
+                    }
                 }
             });
             var ctx4 = document.getElementById('dataChart4').getContext('2d');
@@ -140,6 +162,13 @@
                         data: current,
                         backgroundColor: chartColors.red
                     }]
+                },
+                options: {
+                    scales: {
+                        xAxes: [{
+                            type: 'time'
+                        }]
+                    }
                 }
             });
         </script>
