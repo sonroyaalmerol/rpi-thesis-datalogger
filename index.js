@@ -44,6 +44,7 @@ const getIraw = () => {
 const express = require('express')
 const app = express()
 app.set('view engine', 'ejs')
+app.use(express.static('views/vendors'))
 const PouchDB = require("pouchdb")
 const port = 3000
 const uniqid = require('uniqid')
