@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async-polling": "^0.2.1",
     "ejs": "^2.6.2",
     "express": "^4.17.1",
     "moment": "^2.24.0",
@@ -17,6 +18,7 @@
     "node-dht-sensor": "^0.3.0",
     "node-gyp-build": "^4.1.0",
     "pouchdb": "^7.1.1",
+    "pouchdb-find": "^7.1.1",
     "raspi": "^6.0.1",
     "raspi-i2c": "^6.2.2",
     "uniqid": "^5.0.3"

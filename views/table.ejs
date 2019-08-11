@@ -61,7 +61,11 @@
         </div>
         <script>
             $(document).ready(function() {
-                $('#data').DataTable();
+                $('#data').DataTable({
+                    columnDefs:[{targets: 0, render: (data) => {
+                        return moment(data).format("MMM DD YYYY, h:mm:ss a");
+                    }}]
+                });
             } );
         </script>
         <script>

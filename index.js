@@ -5,7 +5,7 @@ var ADS = new ads1x15(1)
 const getVraw = () => {
   return new Promise((resolve, reject) => {
     var channel = 0 //channel 0, 1, 2, or 3...  
-    var samplesPerSecond = '860' // see index.js for allowed values for your chip  
+    var samplesPerSecond = '250' // see index.js for allowed values for your chip  
     var progGainAmp = '4096' // see index.js for allowed values for your chip  
     ADS.readADCSingleEnded(channel, progGainAmp, samplesPerSecond, (err, data) => {   
       if (err) {  
@@ -23,7 +23,7 @@ const getVraw = () => {
 const getIraw = () => {
   return new Promise((resolve, reject) => {
     var channel = 1 //channel 0, 1, 2, or 3...  
-    var samplesPerSecond = '860' // see index.js for allowed values for your chip  
+    var samplesPerSecond = '250' // see index.js for allowed values for your chip  
     var progGainAmp = '6144' // see index.js for allowed values for your chip  
     ADS.readADCSingleEnded(channel, progGainAmp, samplesPerSecond, (err, data) => {   
       if (err) {  
@@ -42,22 +42,35 @@ const app = express()
 app.set('view engine', 'ejs')
 app.use(express.static('views/vendors'))
 const PouchDB = require("pouchdb")
+PouchDB.plugin(require('pouchdb-find'))
 const port = 3000
-const uniqid = require('uniqid')
-const moment = require('moment')
+const AsyncPolling = require('async-polling')
 
-const db = new PouchDB('thesis-data-demo3')
-var remoteDB = 'http://admin:admin123@thesis.mikumaprojects.com/thesis-data-demo'
-const Poller = require('./poller')
+const dbName = "thesis-data-demo"
 
-// Set 3s timeout between polls
-// note: this is previous request + processing time + timeout
-let poller = new Poller(3000)
+const db = new PouchDB(dbName)
+var remoteDB = `http://couchdb.mikumaprojects.com/${dbName}`
 
-// Wait till the timeout sent our event to the EventEmitter
-poller.onPoll(async () => {
+console.log(remoteDB)
+
+db.sync(remoteDB, {
+  live: true,
+  retry: true
+}).on('change', function (change) {
+  console.log('data change', change)
+}).on('paused', function (info) {
+  console.log('sync paused', info)
+  // replication was paused, usually because of a lost connection
+}).on('active', function (info) {
+  console.log('sync active', info)
+  // replication was resumed
+}).on('error', function (err) {
+  console.log('sync error', err)
+})
+
+AsyncPolling((end) => {
   var Vraw, Iraw, Vout, Iout, humidity, temperature
-  try {  
+  try {
     Vraw = await getVraw()
     console.log(`Vraw: ${Vraw}`)
     Iraw = await getIraw()
@@ -72,7 +85,6 @@ poller.onPoll(async () => {
     Iout = 0
   }
   var { temperature, humidity } = await DHT.read(22, 4)
-
   db.put({
     _id: new Date().toJSON(),
     timestamp: new Date(),
@@ -83,32 +95,23 @@ poller.onPoll(async () => {
   }).catch((err) => {
     console.log(err)
   })
+  // Then notify the polling when your job is done:
+  end()
+  // This will schedule the next call.
+}, 3000).run()
 
-  db.sync(remoteDB, {
-    live: true,
-    retry: true
-  }).on('change', function (change) {
-    console.log('data change', change)
-  }).on('error', function (err) {
-    console.log('sync error', err)
+//*/
+
+app.get('/', async (req, res) => {
+  //console.log('Creating index...')
+  await db.createIndex({
+    index: { fields: [{'timestamp': 'desc'}] }
   })
-
-  poller.poll() // Go for the next poll
-})
-
-// Initial start
-poller.poll()
-
-app.get('/', (req, res) => {
-  db.allDocs({ include_docs: true, descending: true }).then((result) => {
-    res.render('table', { data: result.rows.map((item) => {
-      var toReturn = item.doc
-      toReturn.rawTimestamp = toReturn.timestamp
-      toReturn.timestamp = moment(toReturn.timestamp).format("MMM DD YYYY, h:mm:ss a")
-      return toReturn
-    })})
-  }, (error) => {
-    res.status(400).send(error)
+  //console.log('Finding...')
+  let result = await db.find({ selector: { timestamp: {$exists: true} }, sort: [{timestamp: 'desc'}] })
+  //console.log(result.docs)
+  res.render('table', { 
+    data: result.docs
   })
 })
 
