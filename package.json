@@ -1,18 +1,16 @@
 {
-  "name": "thesis-ui",
+  "name": "thesis-datalogger",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "sensors.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node sensors.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "async-polling": "^0.2.1",
-    "ejs": "^2.6.2",
-    "express": "^4.17.1",
     "moment": "^2.24.0",
     "node-ads1x15": "^1.0.3",
     "node-dht-sensor": "^0.3.0",
@@ -20,7 +18,6 @@
     "pouchdb": "^7.1.1",
     "pouchdb-find": "^7.1.1",
     "raspi": "^6.0.1",
-    "raspi-i2c": "^6.2.2",
-    "uniqid": "^5.0.3"
+    "raspi-i2c": "^6.2.2"
   }
 }
