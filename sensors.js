@@ -36,6 +36,20 @@ const getIraw = () => {
     })
   })
 }
+
+// user-defined function for reporting error to database for viewing purposes
+const reportError = async (err) => {
+  var errs = await database.errdb.allDocs()
+  if (errs.rows.length > 20) {
+    var todelete = errs.rows[0]
+    await database.errdb.remove(todelete.id, todelete.value.rev)
+  }
+  await database.errdb.put({
+    _id: new Date().toJSON(),
+    timestamp: new Date(),
+    error: err
+  })
+}
 //*/
 
 // define asynchronous function for continuous checking for data using sensor
@@ -53,16 +67,18 @@ var poll = AsyncPolling(async (end) => {
     console.log(`Vout: ${Vout}`)
     console.log(`Iout: ${Iout}`)
   } catch (err) {
-    // if error, exit program
+    // if error, report error to database then exit program
     console.log(err)
+    await reportError(`ADS Error! (Vraw: ${Vraw}, Iraw: ${Iraw})`)
     process.exit()
   }
   try {
     var { temperature, humidity } = await DHT.read(22, 4) // read temperature and humidity from DHT22 sensor
     //var temperature = 0; var humidity = 0 // only used for debugging
   } catch (err) {
-    // if error, exit program
+    // if error, report error to database then exit program
     console.log(err)
+    await reportError(`DHT Error! (Temp: ${temperature}, Humidity: ${humidity})`)
     process.exit()
   }
   try {
@@ -84,8 +100,10 @@ var poll = AsyncPolling(async (end) => {
 }, 3000)
 
 // error callback function for poll
-poll.on('error', (error) => {
+poll.on('error', async (error) => {
     // The polling encountered an error, handle it here.
+    // if error, report error to database then exit program
+    await reportError(`Polling error! (${error})`)
     process.exit()
 })
 
