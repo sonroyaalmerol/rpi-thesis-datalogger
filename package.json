@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@agilatech/tsl2561": "^0.8.2",
+    "ads_1x15": "git+https://github.com/jgimbel/node-ADS-1x15.git",
     "async-polling": "^0.2.1",
     "moment": "^2.24.0",
     "node-ads1x15": "^1.0.3",
@@ -18,6 +20,7 @@
     "pouchdb": "^7.1.1",
     "pouchdb-find": "^7.1.1",
     "raspi": "^6.0.1",
-    "raspi-i2c": "^6.2.2"
+    "raspi-i2c": "^6.2.2",
+    "raspi-kit-ads1x15": "^1.0.0"
   }
 }
